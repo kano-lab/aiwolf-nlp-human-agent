@@ -20,6 +20,12 @@ Button{
     border: heavy $success 100%;
 }
 
+#player_name{
+    border: tall $success 60%;
+    width: 30%;
+    min-width: 30;
+}
+
 #main_container #start:hover{
     border: thick $success 80%;
 }
@@ -30,10 +36,4 @@ Button{
 
 #main_container #exit:hover{
     border: thick #dc143c 80%;
-}
-
-#player_name{
-    border: tall $success 60%;
-    width: 30%;
-    min-width: 30;
 }
