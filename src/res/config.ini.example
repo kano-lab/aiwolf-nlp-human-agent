@@ -12,4 +12,4 @@ num = 1
 name1 = kanolab1
 
 [path]
-log_config = ./res/log.ini
+log_config = ./src/res/log.ini
