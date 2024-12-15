@@ -7,8 +7,6 @@ from typing import TYPE_CHECKING
 from utils import agent_util
 
 if TYPE_CHECKING:
-    import configparser
-
     from aiwolf_nlp_common.protocol.info import Info
     from aiwolf_nlp_common.protocol.list.talk_list import TalkList
     from aiwolf_nlp_common.protocol.list.whisper_list import WhisperList
@@ -29,7 +27,6 @@ from aiwolf_nlp_common.role import RoleInfo
 class Agent:
     def __init__(
         self,
-        config: configparser.ConfigParser | None = None,
         name: str | None = None,
         agent_log: AgentLog | None = None,
     ) -> None:
@@ -46,12 +43,6 @@ class Agent:
         self.whisper_history: WhisperList | None = None
         self.agent_log = agent_log
         self.running: bool = True
-        if config is not None:
-            with Path.open(
-                Path(config.get("path", "random_talk")),
-                encoding="utf-8",
-            ) as f:
-                self.comments = f.read().splitlines()
 
     @staticmethod
     def timeout(func: Callable) -> Callable:

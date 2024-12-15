@@ -50,7 +50,6 @@ def run_agent(
             sleep(15)
 
     agent = player.agent.Agent(
-        config=config,
         name=name,
         agent_log=AgentLog(config=config, agent_name=name, log_info=log_info),
     )

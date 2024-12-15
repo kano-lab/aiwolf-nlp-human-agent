@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 
 
 class Human(Agent):
-    def __init__(self, config=None, name=None, agent_log=None) -> None:
-        super().__init__(config, name, agent_log)
+    def __init__(self, name=None, agent_log=None) -> None:
+        super().__init__(name, agent_log)
 
     def timeout_input(self, stdscr: curses.window) -> str:
         start_time = time.time()
