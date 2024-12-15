@@ -282,7 +282,7 @@ class Human(Agent):
         stdscr.addstr(y_pos, 0, "====== Talk History =====")
         y_pos += 1
 
-        if self.talk_history.is_empty():
+        if self.talk_history is None or self.talk_history.is_empty():
             return y_pos
 
         for talk in self.talk_history:
@@ -330,7 +330,7 @@ class Human(Agent):
 
             self.info.divine_result.reset()
 
-        if self.talk_history.is_empty():
+        if self.talk_history is None or self.talk_history.is_empty():
             return comment
 
         for talk in self.talk_history:
