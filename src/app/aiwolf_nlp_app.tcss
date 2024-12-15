@@ -16,14 +16,20 @@ Button{
     height: 100%;
 }
 
-#main_container #start{
-    border: heavy $success 100%;
-}
-
 #player_name{
-    border: tall $success 60%;
+    border: tall $success;
     width: 30%;
     min-width: 30;
+}
+
+#player_name:hover{
+    border: dashed $success;
+    width: 30%;
+    min-width: 30;
+}
+
+#main_container #start{
+    border: heavy $success 100%;
 }
 
 #main_container #start:hover{
