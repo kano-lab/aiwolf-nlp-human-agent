@@ -36,7 +36,7 @@ class Human(Agent):
         stdscr.addstr(y_pos, 0, "You are " + self.info.agent + ".")
         y_pos += 1
 
-        stdscr.addstr(y_pos, 0, "Your role is " + self.role + ".")
+        stdscr.addstr(y_pos, 0, "Your role is " + self.role.en + ".")
         y_pos += 1
 
         stdscr.addstr(y_pos, 0, "Action: " + self.packet.request + ".")
@@ -166,7 +166,7 @@ class Human(Agent):
         stdscr.addstr(y_pos, 0, "You are " + self.info.agent + ".")
         y_pos += 1
 
-        stdscr.addstr(y_pos, 0, "Your role is " + self.role + ".")
+        stdscr.addstr(y_pos, 0, "Your role is " + self.role.en + ".")
         y_pos += 1
 
         stdscr.addstr(y_pos, 0, "Action: " + self.packet.request + ".")
@@ -305,7 +305,7 @@ class Human(Agent):
         super().initialize()
 
         print("You are " + self.info.agent + ".")
-        print("Your role is " + self.role + ".")
+        print("Your role is " + self.role.en + ".")
 
     def daily_initialize(self) -> None:
         return super().daily_initialize()
