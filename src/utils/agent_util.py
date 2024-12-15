@@ -3,25 +3,15 @@ import re
 from aiwolf_nlp_common.role import RoleInfo
 
 import player
+import player.human
 
 
 def set_role(
     prev_agent: player.agent.Agent,
 ) -> player.agent.Agent:
-    agent: player.agent.Agent
-    if RoleInfo.is_villager(role=prev_agent.role):
-        agent = player.villager.Villager()
-    elif RoleInfo.is_werewolf(role=prev_agent.role):
-        agent = player.werewolf.Werewolf()
-    elif RoleInfo.is_seer(role=prev_agent.role):
-        agent = player.seer.Seer()
-    elif RoleInfo.is_possessed(role=prev_agent.role):
-        agent = player.possessed.Possessed()
-    else:
-        raise ValueError(prev_agent.role, "Role is not defined")
+    agent = player.human.Human()
     agent.transfer_state(prev_agent=prev_agent)
     return agent
-
 
 def agent_name_to_idx(name: str) -> int:
     match = re.search(r"\d+", name)
