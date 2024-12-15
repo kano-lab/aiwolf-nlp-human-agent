@@ -1,0 +1,1 @@
+from .aiwolf_nlp_app import AIWolfNLPApp
