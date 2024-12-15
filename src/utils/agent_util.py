@@ -1,7 +1,5 @@
 import re
 
-from aiwolf_nlp_common.role import RoleInfo
-
 import player
 import player.human
 
