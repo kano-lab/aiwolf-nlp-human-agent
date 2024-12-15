@@ -1,1 +1,1 @@
-from player import agent, possessed, seer, villager, werewolf
+from player import agent
