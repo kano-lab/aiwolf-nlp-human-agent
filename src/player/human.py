@@ -5,6 +5,8 @@ import re
 import time
 from typing import TYPE_CHECKING
 
+from aiwolf_nlp_common import Action
+
 from .agent import Agent
 
 if TYPE_CHECKING:
@@ -366,6 +368,11 @@ class Human(Agent):
         self.gameContinue = False
 
     def action(self) -> str:
+        if Action.is_attack(request=self.packet.request):
+            return self.attack()
+        if Action.is_divine(request=self.packet.request):
+            return self.divine()
+
         return super().action()
 
     def transfer_state(self, prev_agent: Agent) -> None:
