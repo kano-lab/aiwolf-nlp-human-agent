@@ -8,8 +8,13 @@ class AIWolfNLPApp(App):
     SCREENS = {"start": Start}
 
     def on_mount(self) -> None:
-        self.push_screen("start")
+        def check_select(button_id: str | None) -> None:
+            if button_id == "start":
+                pass
+            elif button_id == "exit":
+                self.app.exit()
+
+        self.push_screen("start", check_select)
 
     def action_toggle_dark(self) -> None:
-        """An action to toggle dark mode."""
         self.theme = "textual-dark" if self.theme == "textual-light" else "textual-light"
