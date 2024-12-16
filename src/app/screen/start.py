@@ -20,9 +20,5 @@ class Start(Screen):
             classes="box",
         )
 
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "start":
-            pass
-
-        if event.button.id == "exit":
-            self.app.exit()
+    def on_button_pressed(self, button_event: Button.Pressed) -> None:
+        self.dismiss((button_event.button.id, self.query_one(Input).value))
