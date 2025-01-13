@@ -3,7 +3,7 @@ from __future__ import annotations
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.containers import Container, HorizontalGroup
-from textual.widgets import Input, Button, Label
+from textual.widgets import Input, Button, Label, Log
 from pathlib import Path
 from utils.log_info import LogInfo
 from utils.agent_log import AgentLog
@@ -46,5 +46,11 @@ class GameScreen(Screen):
     def compose(self) -> ComposeResult:
         yield HorizontalGroup(
             Label(f"プレイヤー名:{self.agent.name}"),
-            Label(f"{self.agent.index}"),
+            Label(f"Agent名: {self.agent.index}"),
         )
+        yield Log()
+    
+    def _on_mount(self, event):
+        log = self.query_one(Log)
+        log.write_line("ゲームサーバに接続しました!")
+
