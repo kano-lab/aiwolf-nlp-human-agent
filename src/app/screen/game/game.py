@@ -19,6 +19,8 @@ from aiwolf_nlp_common.client.websocket import WebSocketClient
 
 
 class GameScreen(Screen):
+    CSS_PATH = "game.tcss"
+
     def __init__(self, user_name: str):
         self.agent_initialize(user_name=user_name)
         super().__init__()
@@ -50,7 +52,8 @@ class GameScreen(Screen):
         )
         yield VerticalGroup(
             Label("会話履歴"),
-            RichLog(markup=True)
+            RichLog(markup=True, id="history_log"),
+            id="history_container"
         )
     
     def _on_mount(self, event):
