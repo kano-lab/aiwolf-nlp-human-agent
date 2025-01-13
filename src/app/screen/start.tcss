@@ -1,0 +1,63 @@
+Screen{
+    layout: vertical;
+}
+
+#title_container{
+    align: center bottom;
+    margin-bottom: 3;
+}
+
+#title{
+    border: ascii $success;
+    border-title-align: center;
+    border-subtitle-align: right;
+    padding-right: 3;
+    padding-left: 3;
+}
+
+#name_container{
+    align: center middle;
+}
+
+#player_name_label{
+    padding: 1;
+}
+
+#player_name{
+    border: tall $success;
+    width: 40;
+}
+
+#player_name:hover{
+    border: dashed $success;
+    width: 30%;
+}
+
+#button_container{
+    width: 100%;
+    height: 45%;
+    align: center top;
+}
+
+Button{
+    text-align: center;
+    margin-top: 1;
+    height: 5;
+    width: 30;
+}
+
+#button_container #start{
+    border: heavy $success 100%;
+}
+
+#button_container #start:hover{
+    border: thick $success 80%;
+}
+
+#button_container #exit{
+    border: heavy #dc143c 100%;
+}
+
+#button_container #exit:hover{
+    border: thick #dc143c 80%;
+}

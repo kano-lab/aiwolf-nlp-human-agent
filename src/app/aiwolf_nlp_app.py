@@ -12,7 +12,6 @@ class PrintStatic(Static):
 
 
 class AIWolfNLPApp(App):
-    CSS_PATH = "aiwolf_nlp_app.tcss"
     BINDINGS = [("d", "toggle_dark", "Toggle dark mode")]
     SCREENS = {"start": Start}
 
