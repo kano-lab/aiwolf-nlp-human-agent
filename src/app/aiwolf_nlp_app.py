@@ -1,8 +1,8 @@
 from textual.app import App
-from .screen.start import Start
+from .screen.title import TitleScreen
 
 from textual.app import ComposeResult
-from textual.widgets import Static
+from textual.widgets import Static, Input
 
 class PrintStatic(Static):
     text = "Hello, world!"
@@ -13,7 +13,7 @@ class PrintStatic(Static):
 
 class AIWolfNLPApp(App):
     BINDINGS = [("d", "toggle_dark", "Toggle dark mode")]
-    SCREENS = {"start": Start}
+    SCREENS = {"start": TitleScreen}
 
     def compose(self) -> ComposeResult:
         yield PrintStatic()
@@ -21,6 +21,7 @@ class AIWolfNLPApp(App):
     def on_mount(self) -> None:
         def check_select(args:tuple[str, str] | None) -> None:
             button_id, player_name = args
+
             if button_id == "start":
                 self.query_one(PrintStatic).text = args
             elif button_id == "exit":

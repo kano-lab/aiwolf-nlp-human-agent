@@ -27,8 +27,8 @@ def make_label_container(
     )
 
 
-class Start(Screen):
-    CSS_PATH = "start.tcss"
+class TitleScreen(Screen):
+    CSS_PATH = "title.tcss"
 
     def compose(self) -> ComposeResult:
         yield make_label_container(
