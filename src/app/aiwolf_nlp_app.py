@@ -1,8 +1,9 @@
 from textual.app import App
-from .screen.title import TitleScreen
+from .screen.title import TitleScreen, TitleScreenResult
+from .screen.game import GameScreen
 
 from textual.app import ComposeResult
-from textual.widgets import Static, Input
+from textual.widgets import Static
 
 class PrintStatic(Static):
     text = "Hello, world!"
@@ -19,12 +20,11 @@ class AIWolfNLPApp(App):
         yield PrintStatic()
 
     def on_mount(self) -> None:
-        def check_select(args:tuple[str, str] | None) -> None:
-            button_id, player_name = args
-
-            if button_id == "start":
-                self.query_one(PrintStatic).text = args
-            elif button_id == "exit":
+        def check_select(result:TitleScreenResult) -> None:
+            if result.is_start:
+                game_screen = GameScreen(user_name=result.user_name)
+                self.push_screen(game_screen)
+            elif result.is_exit:
                 self.app.exit()
 
         self.push_screen("start", check_select)
