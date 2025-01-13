@@ -3,7 +3,7 @@ from __future__ import annotations
 from textual.app import ComposeResult
 from textual.screen import Screen
 from textual.containers import Container, HorizontalGroup, VerticalGroup
-from textual.widgets import Input, Button, Label, Log
+from textual.widgets import Input, Button, Label, RichLog
 from pathlib import Path
 from utils.log_info import LogInfo
 from utils.agent_log import AgentLog
@@ -50,10 +50,10 @@ class GameScreen(Screen):
         )
         yield VerticalGroup(
             Label("会話履歴"),
-            Log()
+            RichLog(markup=True)
         )
     
     def _on_mount(self, event):
-        log = self.query_one(Log)
-        log.write_line("ゲームサーバに接続しました!")
+        rich_log = self.query_one(RichLog)
+        rich_log.write("[bold red u]ゲームサーバに接続しました!")
 
