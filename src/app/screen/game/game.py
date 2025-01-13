@@ -55,5 +55,17 @@ class GameScreen(Screen):
     
     def _on_mount(self, event):
         rich_log = self.query_one(RichLog)
-        rich_log.write("[bold red u]ゲームサーバに接続しました!")
+
+        text = """
+            [bold green u]ゲームサーバに接続しました![/bold green u]
+
+            Agent[01]: こんにちは！
+            Agent[02]: こんにちは！
+
+            [bold blue u]夜になりました！:zzz:[/bold blue u]:zzz:
+
+            [bold red u]接続が途切れました。[/bold red u]
+        """
+
+        rich_log.write(text)
 
