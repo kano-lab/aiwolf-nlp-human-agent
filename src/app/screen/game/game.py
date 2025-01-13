@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from textual.app import ComposeResult
 from textual.screen import Screen
-from textual.containers import Container, HorizontalGroup
+from textual.containers import Container, HorizontalGroup, VerticalGroup
 from textual.widgets import Input, Button, Label, Log
 from pathlib import Path
 from utils.log_info import LogInfo
@@ -48,7 +48,10 @@ class GameScreen(Screen):
             Label(f"プレイヤー名:{self.agent.name}"),
             Label(f"Agent名: {self.agent.index}"),
         )
-        yield Log()
+        yield VerticalGroup(
+            Label("会話履歴"),
+            Log()
+        )
     
     def _on_mount(self, event):
         log = self.query_one(Log)
