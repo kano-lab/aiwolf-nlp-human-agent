@@ -1,6 +1,6 @@
 from textual.app import App
 from .screen.title import TitleScreen, TitleScreenResult
-from .screen.game import GameScreen
+from .screen.game.game import GameScreen
 
 from textual.app import ComposeResult
 from textual.widgets import Static
