@@ -1,13 +1,17 @@
 import random
 
+from .title_result import TitleScreenResult
+from .button_type import TitleButtonType
+
 from textual.screen import Screen
 from textual.app import ComposeResult
 from textual.containers import Container, HorizontalGroup
 from textual.widgets import Input, Button, Label
 from art import *
 
+
 def make_label(text: str, id: str, border_title: str = "", border_subtitle: str = "") -> Label:
-    fonts:list = ["dancingfont", "doom", "larry3d"]
+    fonts: list = ["dancingfont", "doom", "larry3d"]
     text = text2art(text, font=random.choice(fonts))
     lbl = Label(text, id=id)
     lbl.border_title = border_title
@@ -53,14 +57,21 @@ class TitleScreen(Screen):
             classes="box",
         )
         yield Container(
-            Button(label="Start", id="start"),
-            Button(label="Exit", id="exit"),
+            Button(label="Start", id=TitleButtonType.START.value),
+            Button(label="Exit", id=TitleButtonType.EXIT.value),
             id="button_container",
             classes="box",
         )
 
     def on_button_pressed(self, button_event: Button.Pressed) -> None:
-        if not self.query_one(Input).is_valid:
-            pass
-        else:
-            self.dismiss((button_event.button.id, self.query_one(Input).value))
+        result: TitleScreenResult = TitleScreenResult(user_name=self.query_one(Input).value)
+
+        if button_event.button.id == TitleButtonType.START.value:
+            result.is_start = True
+        elif button_event.button.id == TitleButtonType.EXIT.value:
+            result.is_exit = True
+
+        if not result.user_name and result.is_start:
+            return
+
+        self.dismiss(result)
