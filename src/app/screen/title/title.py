@@ -63,6 +63,11 @@ class TitleScreen(Screen):
             classes="box",
         )
 
+    def toggle_border(self) -> None:
+        current_edge_type = self.query_one(Input).styles.border.top[0]
+        new_edge_type = "ascii" if current_edge_type != "ascii" else "blank"
+        self.query_one(Input).styles.border = (new_edge_type, "red")
+
     def on_button_pressed(self, button_event: Button.Pressed) -> None:
         result: TitleScreenResult = TitleScreenResult(user_name=self.query_one(Input).value)
 
@@ -72,6 +77,7 @@ class TitleScreen(Screen):
             result.is_exit = True
 
         if not result.user_name and result.is_start:
+            self.set_interval(0.5, self.toggle_border)
             return
 
         self.dismiss(result)
