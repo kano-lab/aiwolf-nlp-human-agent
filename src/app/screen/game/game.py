@@ -51,9 +51,13 @@ class GameScreen(Screen):
             Label(f"Agent名: {self.agent.index}"),
         )
         yield VerticalGroup(
-            Label("会話履歴"),
+            Label("会話履歴", id="history_log_label"),
             RichLog(markup=True, id="history_log"),
             id="history_container"
+        )
+        yield Container(
+            Input(id="text_input"),
+            id="text_container"
         )
     
     def _on_mount(self, event):
