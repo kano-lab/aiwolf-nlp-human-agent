@@ -1,16 +1,5 @@
 import re
 
-import player
-import player.human
-
-
-def set_role(
-    prev_agent: player.agent.Agent,
-) -> player.agent.Agent:
-    agent = player.human.Human()
-    agent.transfer_state(prev_agent=prev_agent)
-    return agent
-
 def agent_name_to_idx(name: str) -> int:
     match = re.search(r"\d+", name)
     if match is None:
