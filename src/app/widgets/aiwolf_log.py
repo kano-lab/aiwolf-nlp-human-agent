@@ -90,3 +90,7 @@ class AIwolfNLPLog(RichLog):
     def write(self, width=None, expand=False, shrink=True, scroll_end=None, animate=False):
         content = str("\n".join(self.messages))
         return super().write(content=content)
+    
+    def update(self) -> None:
+        self.clear()
+        self.write()
