@@ -1,0 +1,1 @@
+from .aiwolf_log import AIwolfNLPLog
