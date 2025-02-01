@@ -56,8 +56,8 @@ class AIwolfNLPLog(RichLog):
         if under_line:
             options.append("u")
 
-        bbcode_start: str = f"[{" ".join(options)}]"
-        bbcode_end: str = f"[/{" ".join(options)}]"
+        bbcode_start: str = f"[{' '.join(options)}]"
+        bbcode_end: str = f"[/{' '.join(options)}]"
 
         return bbcode_start + message + bbcode_end
 
@@ -72,9 +72,13 @@ class AIwolfNLPLog(RichLog):
         error: bool = False,
         night: bool = False,
     ) -> None:
-        system_message: str = f"\n{self._assignment_decoration(message=message, red=error, green=success, blue=night, under_line=True)}\n"
+        system_message: str = f"{self._assignment_decoration(message=message, red=error, green=success, blue=night, under_line=True)}\n"
+
+        if len(self.messages):
+            system_message = "\n" + system_message
 
         self.add_message(message=system_message)
 
-    def write(self) -> None:
-        self.write("\n".join(self.messages))
+    def write(self, width=None, expand=False, shrink=True, scroll_end=None, animate=False):
+        content = str("\n".join(self.messages))
+        return super().write(content=content)
