@@ -2,6 +2,8 @@ from textual.widgets import RichLog
 
 
 class AIwolfNLPLog(RichLog):
+    __padding = "\t"
+
     def __init__(
         self,
         *,
@@ -37,6 +39,7 @@ class AIwolfNLPLog(RichLog):
         red: bool = False,
         green: bool = False,
         blue: bool = False,
+        bold: bool = False,
         under_line: bool = False,
     ) -> str:
         options: list = []
@@ -53,6 +56,9 @@ class AIwolfNLPLog(RichLog):
         if green:
             options.append("green")
 
+        if bold:
+            options.append("b")
+
         if under_line:
             options.append("u")
 
@@ -62,7 +68,7 @@ class AIwolfNLPLog(RichLog):
         return bbcode_start + message + bbcode_end
 
     def add_message(self, message: str) -> None:
-        self.messages.append(message)
+        self.messages.append(self.__padding + message)
 
     def add_system_message(
         self,
@@ -72,10 +78,12 @@ class AIwolfNLPLog(RichLog):
         error: bool = False,
         night: bool = False,
     ) -> None:
-        system_message: str = f"{self._assignment_decoration(message=message, red=error, green=success, blue=night, under_line=True)}\n"
+        system_message: str = self._assignment_decoration(
+            message=message, red=error, green=success, blue=night, bold=True, under_line=True,
+        )
 
         if len(self.messages):
-            system_message = "\n" + system_message
+            system_message = "\n" + self.__padding + system_message
 
         self.add_message(message=system_message)
 
