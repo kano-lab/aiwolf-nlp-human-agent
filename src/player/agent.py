@@ -188,6 +188,10 @@ class Agent:
             self.whisper()
         elif Action.is_finish(request=self.packet.request):
             self.finish()
+        elif Action.is_divine(request=self.packet.request):
+            return self.vote()
+        elif Action.is_attack(request=self.packet.request):
+            return self.vote()
         return ""
 
     def transfer_state(self, prev_agent: Agent) -> None:
