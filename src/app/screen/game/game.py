@@ -3,6 +3,7 @@ from __future__ import annotations
 from configparser import ConfigParser
 from pathlib import Path
 
+import asyncio
 from aiwolf_nlp_common.client.websocket import WebSocketClient
 from PIL import Image
 from rich_pixels import Pixels
@@ -16,6 +17,10 @@ from app.widgets import AIwolfNLPLog
 from player.agent import Agent
 from utils.agent_log import AgentLog
 from utils.log_info import LogInfo
+
+import time
+from time import sleep as time_sleep
+from asyncio import get_running_loop
 
 
 class GameScreen(Screen):
@@ -78,19 +83,30 @@ class GameScreen(Screen):
         )
         yield Container(Input(id="text_input"), id="text_container")
 
-    def agent_connect(self, log: AIwolfNLPLog) -> None:
+    def agent_connect(self, log: AIwolfNLPLog) -> bool:
+        is_success:bool = True
+
         try:
             self.client.connect()
             log.add_system_message(message="ゲームサーバに接続しました!", success=True)
         except:
             log.add_system_message(message="ゲームサーバへの接続に失敗しました。", error=True)
+            is_success = False
         finally:
             log.update()
+        
+        return is_success
+    
+    def app_exit(self, log: AIwolfNLPLog) -> None:
+        log.add_system_message(message=f"{1}秒後にアプリを終了します。", error=True)
+        self.set_timer(delay=3, callback=self.app.exit)
 
     def _on_mount(self, event):
         log: AIwolfNLPLog = self.query_one("#history_log", AIwolfNLPLog)
 
-        self.agent_connect(log=log)
+        if not self.agent_connect(log=log):
+            self.app_exit(log=log)
+            return
 
         text = """
             Agent[01]: こんにちは！
