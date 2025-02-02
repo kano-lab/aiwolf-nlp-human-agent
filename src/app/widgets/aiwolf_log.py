@@ -69,6 +69,7 @@ class AIwolfNLPLog(RichLog):
 
     def add_message(self, message: str) -> None:
         self.messages.append(self.__padding + message)
+        self.update()
 
     def add_system_message(
         self,
