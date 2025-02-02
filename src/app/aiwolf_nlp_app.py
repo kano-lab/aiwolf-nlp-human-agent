@@ -3,6 +3,7 @@ from __future__ import annotations
 from configparser import ConfigParser
 from pathlib import Path
 
+from aiwolf_nlp_common.action import Action
 from aiwolf_nlp_common.client.websocket import WebSocketClient
 from PIL import Image
 from rich_pixels import Pixels
@@ -10,15 +11,15 @@ from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, HorizontalGroup, VerticalGroup
 from textual.widgets import Input, Label
+from textual.worker import get_current_worker
 
+import utils
 from app.widgets import AIwolfNLPLog, MapLabel
 from player.agent import Agent
 from utils.agent_log import AgentLog
 from utils.log_info import LogInfo
 
 from .screen.title import TitleScreen, TitleScreenResult
-
-from textual.worker import Worker, get_current_worker
 
 
 class AIWolfNLPApp(App):
@@ -31,7 +32,7 @@ class AIWolfNLPApp(App):
         self.image = Pixels.from_image(self.image)
 
         super().__init__()
-    
+
     def _on_mount(self, event):
         def check_select(result: TitleScreenResult) -> None:
             if result.is_start:
@@ -40,7 +41,7 @@ class AIWolfNLPApp(App):
                 self.app.exit()
 
         self.push_screen("start", check_select)
-    
+
     def compose(self) -> ComposeResult:
         yield HorizontalGroup(
             VerticalGroup(
@@ -69,25 +70,43 @@ class AIWolfNLPApp(App):
     def _app_exit(self, log: AIwolfNLPLog, error_message: str = "") -> None:
         worker = get_current_worker()
 
-        if error_message:
+        if error_message and not worker.is_cancelled:
             self.call_from_thread(lambda: log.add_system_message(message=error_message, error=True))
-        
-        self.call_from_thread(lambda: log.add_system_message(message=f"{5}秒後にアプリを終了します。", error=True))
-        self.call_from_thread(log.update)
-        self.call_from_thread(lambda: self.set_timer(delay=5, callback=lambda: self.app.exit(return_code=-1)))
+
+        if not worker.is_cancelled:
+            self.call_from_thread(
+                lambda: log.add_system_message(
+                    message=f"{5}秒後にアプリを終了します。",
+                    error=True,
+                ),
+            )
+            self.call_from_thread(
+                lambda: self.set_timer(delay=5, callback=lambda: self.app.exit(return_code=-1)),
+            )
 
     @work(exclusive=True, thread=True)
-    def _run_agent(self, log: AIwolfNLPLog, user_name:str):
-
+    def _run_agent(self, log: AIwolfNLPLog, user_name: str):
         try:
-            self._game_initialize(user_name=user_name)
-            self._connect(log=log)
+            client, agent = self._game_initialize(user_name=user_name)
+            self._connect(client=client, log=log)
         except Exception as e:
             self._app_exit(log=log, error_message=str(e))
             return
 
-        while self.agent.running:
-            pass
+        while agent.running:
+            if len(agent.received) == 0:
+                receive = client.receive()
+                if isinstance(receive, (str, list)):
+                    agent.append_recv(recv=receive)
+            agent.set_packet()
+            req = agent.action()
+            if agent.packet is None:
+                continue
+
+            if req != "":
+                client.send(req=req)
+        
+        self._app_exit(log=log, error_message="正常に終わっちゃった！！！！！！！！！！！！")
 
     def _create_detail_label(self, key: str, value: str, id: str | None = None) -> MapLabel:
         return MapLabel(
@@ -99,7 +118,7 @@ class AIWolfNLPApp(App):
             underline=True,
         )
 
-    def _game_initialize(self, user_name:str) -> None:
+    def _game_initialize(self, user_name: str) -> tuple[WebSocketClient, Agent]:
         config_path = "./src/res/config.ini"
 
         if Path(config_path).exists():
@@ -110,31 +129,38 @@ class AIWolfNLPApp(App):
 
         log_info = LogInfo()
 
-        self.client: WebSocketClient = WebSocketClient(
+        client: WebSocketClient = WebSocketClient(
             url=config.get("websocket", "url"),
         )
 
-        self.agent = Agent(
+        agent = Agent(
             name=user_name,
             agent_log=AgentLog(config=config, agent_name=user_name, log_info=log_info),
         )
 
-        self.query_one("#player_name_info", MapLabel).update_value(value=self.agent.name)
+        self.query_one("#player_name_info", MapLabel).update_value(value=agent.name)
 
-    def _connect(self, log: AIwolfNLPLog) -> None:
+        return client, agent
+
+    def _connect(self, client: WebSocketClient, log: AIwolfNLPLog) -> None:
         worker = get_current_worker()
 
         try:
-            self.client.connect()
+            client.connect()
             if not worker.is_cancelled:
-                self.call_from_thread(lambda: log.add_system_message(message="ゲームサーバに接続しました!", success=True))
-                self.call_from_thread(log.update)
+                self.call_from_thread(
+                    lambda: log.add_system_message(
+                        message="ゲームサーバに接続しました!",
+                        success=True,
+                    ),
+                )
         except ConnectionRefusedError:
             raise ConnectionRefusedError("ゲームサーバへの接続に失敗しました。")
-        
-    def execute(self, user_name:str) -> None:
+
+    def execute(self, user_name: str) -> None:
         log: AIwolfNLPLog = self.query_one("#history_log", AIwolfNLPLog)
 
+        user_name = "kanolab5"
         self._run_agent(log=log, user_name=user_name)
 
         text = """
@@ -145,9 +171,5 @@ class AIWolfNLPApp(App):
 
             [bold red u]接続が途切れました。[/bold red u]
         """
-
-        # log.add_message(text)
-
-        # log.update()
 
         self.query_one("#image", Label).update(self.image)
