@@ -33,7 +33,6 @@ class Agent:
         self.name: str = name if name is not None else ""
         self.index: int = -1
         self.received: list[str] = []
-        self.comments: list[str] = []
         self.role: Role = RoleInfo.VILLAGER.value
         self.action_timeout: int = 0
         self.packet: Packet | None = None
@@ -138,7 +137,7 @@ class Agent:
                 self.talk_history = self.packet.talk_history
             elif self.packet.talk_history is not None:
                 self.talk_history.extend(self.packet.talk_history)
-        comment = random.choice(self.comments)  # noqa: S311
+        comment = "Test!!!"
         if self.agent_log is not None:
             self.agent_log.talk(comment=comment)
         return comment
@@ -195,7 +194,6 @@ class Agent:
         self.name = prev_agent.name
         self.index = prev_agent.index
         self.received = prev_agent.received
-        self.comments = prev_agent.comments
         self.role = prev_agent.role
         self.action_timeout = prev_agent.action_timeout
         self.packet = prev_agent.packet
