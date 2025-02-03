@@ -58,7 +58,7 @@ class AIWolfNLPApp(App):
                         id="player_name_info",
                     ),
                     self._create_detail_label(key="Agent名", value="???", id="agent_name_info"),
-                    self._create_detail_label(key="役職", value="???"),
+                    self._create_detail_label(key="役職", value="???", id="agent_role_info"),
                     id="detail_info_container",
                 ),
                 id="player_info_container",
@@ -102,6 +102,10 @@ class AIWolfNLPApp(App):
             req = agent.action()
             if agent.packet is None:
                 continue
+
+            if Action.is_initialize(request=agent.packet.request):
+                self.query_one("#agent_name_info", MapLabel).update_value(value=agent.info.agent)
+                self.query_one("#agent_role_info", MapLabel).update_value(value=agent.role.ja)
 
             if req != "":
                 client.send(req=req)
