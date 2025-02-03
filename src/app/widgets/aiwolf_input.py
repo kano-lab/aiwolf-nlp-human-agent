@@ -45,8 +45,11 @@ class AIWolfNLPInput(Input):
 
         self.loading_indicator = LoadingIndicator(id="loading")
 
+    def _on_mount(self, event):
         if self.disabled:
             self.mount(self.loading_indicator)
+
+        return super()._on_mount(event)
 
     def enable(self) -> None:
         self.disabled = False
