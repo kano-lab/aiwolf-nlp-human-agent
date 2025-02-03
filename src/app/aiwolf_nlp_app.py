@@ -10,10 +10,9 @@ from rich_pixels import Pixels
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, HorizontalGroup, VerticalGroup
-from textual.widgets import Input, Label
+from textual.widgets import Input, Label, LoadingIndicator
 from textual.worker import get_current_worker
 
-import utils
 from app.widgets import AIwolfNLPLog, MapLabel
 from player.agent import Agent
 from utils.agent_log import AgentLog
@@ -106,6 +105,9 @@ class AIWolfNLPApp(App):
             if Action.is_initialize(request=agent.packet.request):
                 self.query_one("#agent_name_info", MapLabel).update_value(value=agent.info.agent)
                 self.query_one("#agent_role_info", MapLabel).update_value(value=agent.role.ja)
+            elif Action.is_talk(request=agent.packet.request):
+                 self.query_one("#text_input", Input).disabled = False
+                 self.query_one("#text_input", Input).remove_children()
 
             if req != "":
                 client.send(req=req)
@@ -163,6 +165,10 @@ class AIWolfNLPApp(App):
 
     def execute(self, user_name: str) -> None:
         log: AIwolfNLPLog = self.query_one("#history_log", AIwolfNLPLog)
+
+        self.query_one("#text_input", Input).disabled = True
+        self.loadng = LoadingIndicator(id="loading")
+        self.query_one("#text_input", Input).mount(self.loadng)
 
         user_name = "kanolab5"
         self._run_agent(log=log, user_name=user_name)
