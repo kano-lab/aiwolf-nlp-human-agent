@@ -1,70 +1,44 @@
-from textual.widgets import Input, LoadingIndicator
+from textual.app import ComposeResult
+from textual.containers import HorizontalGroup
+from textual.widgets import Button, Input, LoadingIndicator
 
 
-class AIWolfNLPInput(Input):
-    def __init__(
-        self,
-        value=None,
-        placeholder="",
-        highlighter=None,
-        password=False,
-        *,
-        restrict=None,
-        type="text",
-        max_length=0,
-        suggester=None,
-        validators=None,
-        validate_on=None,
-        valid_empty=False,
-        select_on_focus=True,
-        name=None,
-        id=None,
-        classes=None,
-        disabled=False,
-        tooltip=None,
-    ):
-        super().__init__(
-            value,
-            placeholder,
-            highlighter,
-            password,
-            restrict=restrict,
-            type=type,
-            max_length=max_length,
-            suggester=suggester,
-            validators=validators,
-            validate_on=validate_on,
-            valid_empty=valid_empty,
-            select_on_focus=select_on_focus,
-            name=name,
-            id=id,
-            classes=classes,
-            disabled=disabled,
-            tooltip=tooltip,
-        )
-
+class AIWolfNLPInputGroup(HorizontalGroup):
+    def __init__(self, *children, name=None, id=None, classes=None, disabled=False):
+        self.content_disabled = disabled
         self.loading_indicator = LoadingIndicator(id="loading")
 
+        super().__init__(*children, name=name, id=id, classes=classes, disabled=False)
+
+    def compose(self) -> ComposeResult:
+        self.input = Input(id="comment_field")
+        self.button = Button(":play_button:", id="send_button")
+
+        yield self.input
+        yield self.button
+
     def _on_mount(self, event):
-        if self.disabled:
-            self.mount(self.loading_indicator)
+        if self.content_disabled:
+            self.disable()
 
         return super()._on_mount(event)
 
     def enable(self) -> None:
-        self.disabled = False
+        self.input.disabled = False
+        self.button.disabled = False
 
-        if self.children:
-            self.remove_children()
+        if self.input.children:
+            self.input.remove_children()
 
     def disable(self) -> None:
-        self.disabled = True
+        self.input.disabled = True
+        self.button.disabled = True
 
-        if not self.children:
-            self.mount(self.loading_indicator)
+        if not self.input.children:
+            self.input.mount(self.loading_indicator)
 
     def toggle_availability(self) -> None:
-        if self.disabled:
+        if self.content_disabled:
             self.enable()
         else:
             self.disable()
