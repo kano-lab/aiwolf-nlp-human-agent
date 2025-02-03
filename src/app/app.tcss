@@ -36,10 +36,19 @@
     margin: 1;
 }
 
-#text_container{
+#input_container{
+    width: 100%;
+    height: 20%;
     align: center middle;
 }
 
-#text_input{
+#input_container > #comment_field{
     border: heavy white;
+    width: 60%;
+    margin: 1;
+}
+
+#input_container >#send_button{
+    width: 10%;
+    height: 3;
 }
