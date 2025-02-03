@@ -10,15 +10,26 @@ from rich_pixels import Pixels
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, HorizontalGroup, VerticalGroup
-from textual.widgets import Input, Label, LoadingIndicator
+from textual.widgets import Label
 from textual.worker import get_current_worker
 
-from app.widgets import AIwolfNLPLog, MapLabel
+from app.widgets import AIWolfNLPInput, AIwolfNLPLog, MapLabel
 from player.agent import Agent
 from utils.agent_log import AgentLog
 from utils.log_info import LogInfo
 
 from .screen.title import TitleScreen, TitleScreenResult
+
+
+def create_detail_label(key: str, value: str, id: str | None = None) -> MapLabel:
+    return MapLabel(
+        key=key,
+        value=value,
+        id=id,
+        classes="detail_info_label",
+        bold=True,
+        underline=True,
+    )
 
 
 class AIWolfNLPApp(App):
@@ -35,7 +46,7 @@ class AIWolfNLPApp(App):
     def _on_mount(self, event):
         def check_select(result: TitleScreenResult) -> None:
             if result.is_start:
-                self.execute(user_name=result.user_name)
+                self._run_agent(user_name=result.user_name)
             elif result.is_exit:
                 self.app.exit()
 
@@ -51,20 +62,20 @@ class AIWolfNLPApp(App):
             Container(
                 Label(id="image"),
                 Container(
-                    self._create_detail_label(
+                    create_detail_label(
                         key="プレイヤー名",
                         value="???",
                         id="player_name_info",
                     ),
-                    self._create_detail_label(key="Agent名", value="???", id="agent_name_info"),
-                    self._create_detail_label(key="役職", value="???", id="agent_role_info"),
+                    create_detail_label(key="Agent名", value="???", id="agent_name_info"),
+                    create_detail_label(key="役職", value="???", id="agent_role_info"),
                     id="detail_info_container",
                 ),
                 id="player_info_container",
             ),
             id="info_container",
         )
-        yield Container(Input(id="text_input"), id="text_container")
+        yield Container(AIWolfNLPInput(disabled=True, id="text_input"), id="text_container")
 
     def _app_exit(self, log: AIwolfNLPLog, error_message: str = "") -> None:
         worker = get_current_worker()
@@ -84,7 +95,11 @@ class AIWolfNLPApp(App):
             )
 
     @work(exclusive=True, thread=True)
-    def _run_agent(self, log: AIwolfNLPLog, user_name: str):
+    def _run_agent(self, user_name: str):
+        log: AIwolfNLPLog = self.query_one("#history_log", AIwolfNLPLog)
+        user_name = "kanolab5"
+        self.query_one("#image", Label).update(self.image)
+
         try:
             client, agent = self._game_initialize(user_name=user_name)
             self._connect(client=client, log=log)
@@ -106,23 +121,12 @@ class AIWolfNLPApp(App):
                 self.query_one("#agent_name_info", MapLabel).update_value(value=agent.info.agent)
                 self.query_one("#agent_role_info", MapLabel).update_value(value=agent.role.ja)
             elif Action.is_talk(request=agent.packet.request):
-                 self.query_one("#text_input", Input).disabled = False
-                 self.query_one("#text_input", Input).remove_children()
+                self.query_one("#text_input", AIWolfNLPInput).enable()
 
             if req != "":
                 client.send(req=req)
-        
-        self._app_exit(log=log, error_message="正常に終わっちゃった！！！！！！！！！！！！")
 
-    def _create_detail_label(self, key: str, value: str, id: str | None = None) -> MapLabel:
-        return MapLabel(
-            key=key,
-            value=value,
-            id=id,
-            classes="detail_info_label",
-            bold=True,
-            underline=True,
-        )
+        self._app_exit(log=log, error_message="正常に終わっちゃった！！！！！！！！！！！！")
 
     def _game_initialize(self, user_name: str) -> tuple[WebSocketClient, Agent]:
         config_path = "./src/res/config.ini"
@@ -163,16 +167,7 @@ class AIWolfNLPApp(App):
         except ConnectionRefusedError:
             raise ConnectionRefusedError("ゲームサーバへの接続に失敗しました。")
 
-    def execute(self, user_name: str) -> None:
-        log: AIwolfNLPLog = self.query_one("#history_log", AIwolfNLPLog)
-
-        self.query_one("#text_input", Input).disabled = True
-        self.loadng = LoadingIndicator(id="loading")
-        self.query_one("#text_input", Input).mount(self.loadng)
-
-        user_name = "kanolab5"
-        self._run_agent(log=log, user_name=user_name)
-
+    def execute(self) -> None:
         text = """
             Agent[01]: こんにちは！
             Agent[02]: こんにちは！
@@ -181,5 +176,3 @@ class AIWolfNLPApp(App):
 
             [bold red u]接続が途切れました。[/bold red u]
         """
-
-        self.query_one("#image", Label).update(self.image)
