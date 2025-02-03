@@ -43,6 +43,11 @@ class AIWolfNLPInput(Input):
             tooltip=tooltip,
         )
 
+        self.loading_indicator = LoadingIndicator(id="loading")
+
+        if self.disabled:
+            self.mount(self.loading_indicator)
+
     def enable(self) -> None:
         self.disabled = False
 
@@ -51,7 +56,7 @@ class AIWolfNLPInput(Input):
 
     def disable(self) -> None:
         self.disabled = True
-        self.mount(LoadingIndicator(id="loading"))
+        self.mount(self.loading_indicator)
 
     def toggle_availability(self) -> None:
         if self.disabled:
