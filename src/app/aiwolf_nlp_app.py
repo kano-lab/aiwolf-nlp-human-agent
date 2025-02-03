@@ -13,7 +13,7 @@ from textual.containers import Container, HorizontalGroup, VerticalGroup
 from textual.widgets import Label
 from textual.worker import get_current_worker
 
-from app.widgets import AIWolfNLPInput, AIwolfNLPLog, MapLabel
+from app.widgets import AIWolfNLPInputGroup, AIwolfNLPLog, MapLabel
 from player.agent import Agent
 from utils.agent_log import AgentLog
 from utils.log_info import LogInfo
@@ -75,7 +75,7 @@ class AIWolfNLPApp(App):
             ),
             id="info_container",
         )
-        yield Container(AIWolfNLPInput(disabled=True, id="text_input"), id="text_container")
+        yield AIWolfNLPInputGroup(id="input_container", disabled=True)
 
     def _app_exit(self, log: AIwolfNLPLog, error_message: str = "") -> None:
         worker = get_current_worker()
@@ -121,7 +121,7 @@ class AIWolfNLPApp(App):
                 self.query_one("#agent_name_info", MapLabel).update_value(value=agent.info.agent)
                 self.query_one("#agent_role_info", MapLabel).update_value(value=agent.role.ja)
             elif Action.is_talk(request=agent.packet.request):
-                self.query_one("#text_input", AIWolfNLPInput).enable()
+                self.query_one("#input_container", AIWolfNLPInputGroup).enable()
 
             if req != "":
                 client.send(req=req)
@@ -166,6 +166,13 @@ class AIWolfNLPApp(App):
                 )
         except ConnectionRefusedError:
             raise ConnectionRefusedError("ゲームサーバへの接続に失敗しました。")
+
+    def agent_action(self, agent: Agent) -> None:
+        if Action.is_talk(request=agent.packet.request):
+            self.query_one("#input_container", AIWolfNLPInputGroup).enable()
+        else:
+            self.query_one("#input_container", AIWolfNLPInputGroup).disable()
+
 
     def execute(self) -> None:
         text = """
