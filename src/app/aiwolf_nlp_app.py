@@ -10,8 +10,9 @@ from rich_pixels import Pixels
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, HorizontalGroup, VerticalGroup
-from textual.widgets import Label
+from textual.widgets import Label, Button
 from textual.worker import get_current_worker
+from textual.worker_manager import WorkerManager
 
 from app.widgets import AIWolfNLPInputGroup, AIwolfNLPLog, MapLabel
 from player.agent import Agent
@@ -19,6 +20,8 @@ from utils.agent_log import AgentLog
 from utils.log_info import LogInfo
 
 from .screen.title import TitleScreen, TitleScreenResult
+
+import threading
 
 
 def create_detail_label(key: str, value: str, id: str | None = None) -> MapLabel:
@@ -40,7 +43,7 @@ class AIWolfNLPApp(App):
     def __init__(self):
         self.image = Image.open(self.IMAGE_PATH)
         self.image = Pixels.from_image(self.image)
-
+        self.button_pressed_event = threading.Event()
         super().__init__()
 
     def _on_mount(self, event):
@@ -117,11 +120,11 @@ class AIWolfNLPApp(App):
             if agent.packet is None:
                 continue
 
+            req = self.agent_action(agent=agent)
+
             if Action.is_initialize(request=agent.packet.request):
                 self.query_one("#agent_name_info", MapLabel).update_value(value=agent.info.agent)
                 self.query_one("#agent_role_info", MapLabel).update_value(value=agent.role.ja)
-            elif Action.is_talk(request=agent.packet.request):
-                self.query_one("#input_container", AIWolfNLPInputGroup).enable()
 
             if req != "":
                 client.send(req=req)
@@ -167,12 +170,17 @@ class AIWolfNLPApp(App):
         except ConnectionRefusedError:
             raise ConnectionRefusedError("ゲームサーバへの接続に失敗しました。")
 
-    def agent_action(self, agent: Agent) -> None:
+    def agent_action(self, agent: Agent) -> str:
+        message:str = ""
+
         if Action.is_talk(request=agent.packet.request):
             self.query_one("#input_container", AIWolfNLPInputGroup).enable()
+            self.button_pressed_event.wait()
+            self.button_pressed_event.clear()
         else:
             self.query_one("#input_container", AIWolfNLPInputGroup).disable()
 
+        return message
 
     def execute(self) -> None:
         text = """
@@ -183,3 +191,7 @@ class AIWolfNLPApp(App):
 
             [bold red u]接続が途切れました。[/bold red u]
         """
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "send_button":
+            self.button_pressed_event.set()
