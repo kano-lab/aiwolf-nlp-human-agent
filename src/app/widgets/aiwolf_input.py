@@ -23,19 +23,19 @@ class AIWolfNLPInputGroup(HorizontalGroup):
 
         return super()._on_mount(event)
 
-    def enable(self) -> None:
+    async def enable(self) -> None:
         self.input.disabled = False
         self.button.disabled = False
 
         if self.input.children:
-            self.input.remove_children()
+            await self.input.remove_children()
 
-    def disable(self) -> None:
+    async def disable(self) -> None:
         self.input.disabled = True
         self.button.disabled = True
 
         if not self.input.children:
-            self.input.mount(self.loading_indicator)
+            await self.input.mount(self.loading_indicator)
 
     def toggle_availability(self) -> None:
         if self.content_disabled:
