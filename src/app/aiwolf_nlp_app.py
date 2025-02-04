@@ -10,9 +10,8 @@ from rich_pixels import Pixels
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, HorizontalGroup, VerticalGroup
-from textual.widgets import Label, Button
+from textual.widgets import Label, Button, Input
 from textual.worker import get_current_worker
-from textual.worker_manager import WorkerManager
 
 from app.widgets import AIWolfNLPInputGroup, AIwolfNLPLog, MapLabel
 from player.agent import Agent
@@ -116,7 +115,6 @@ class AIWolfNLPApp(App):
                 if isinstance(receive, (str, list)):
                     agent.append_recv(recv=receive)
             agent.set_packet()
-            req = agent.action()
             if agent.packet is None:
                 continue
 
@@ -171,14 +169,17 @@ class AIWolfNLPApp(App):
             raise ConnectionRefusedError("ゲームサーバへの接続に失敗しました。")
 
     def agent_action(self, agent: Agent) -> str:
-        message:str = ""
+        message: str = ""
 
         if Action.is_talk(request=agent.packet.request):
             self.query_one("#input_container", AIWolfNLPInputGroup).enable()
             self.button_pressed_event.wait()
             self.button_pressed_event.clear()
+            message = self.query_one("#comment_field", Input).value
+            self.query_one("#comment_field", Input).clear()
         else:
             self.query_one("#input_container", AIWolfNLPInputGroup).disable()
+            message = agent.action()
 
         return message
 
