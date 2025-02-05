@@ -1,3 +1,4 @@
+from aiwolf_nlp_common.protocol.list import TalkInfo, TalkList
 from textual.widgets import RichLog
 
 
@@ -18,7 +19,9 @@ class AIwolfNLPLog(RichLog):
         classes=None,
         disabled=False,
     ):
-        self.messages: list = []
+        self.messages: list[str | TalkInfo] = []
+        self.latest_history_index: int | None = None
+
         super().__init__(
             max_lines=max_lines,
             min_width=min_width,
@@ -80,7 +83,12 @@ class AIwolfNLPLog(RichLog):
         night: bool = False,
     ) -> None:
         system_message: str = self._assignment_decoration(
-            message=message, red=error, green=success, blue=night, bold=True, under_line=True,
+            message=message,
+            red=error,
+            green=success,
+            blue=night,
+            bold=True,
+            under_line=True,
         )
 
         if len(self.messages):
@@ -91,7 +99,23 @@ class AIwolfNLPLog(RichLog):
     def write(self, width=None, expand=False, shrink=True, scroll_end=None, animate=False):
         content = str("\n".join(self.messages))
         return super().write(content=content)
-    
+
     def update(self) -> None:
         self.clear()
         self.write()
+
+    def update_talk_history(self, talk_history: TalkList | None) -> None:
+        if talk_history is None:
+            return
+
+        for talk_elem in talk_history:
+            if self.latest_history_index is not None and talk_elem.idx <= self.latest_history_index:
+                continue
+
+            self.add_message(message=f"{talk_elem.agent}:{talk_elem.text}")
+            self.latest_history_index = talk_elem.idx
+
+        self.update()
+
+    def daily_initialize(self) -> None:
+        self.latest_history_index = None

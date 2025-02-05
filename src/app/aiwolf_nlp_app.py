@@ -118,7 +118,7 @@ class AIWolfNLPApp(App):
             if agent.packet is None:
                 continue
 
-            req = self.agent_action(agent=agent)
+            req = self.agent_action(agent=agent, log=log)
 
             if Action.is_initialize(request=agent.packet.request):
                 self.query_one("#agent_name_info", MapLabel).update_value(value=agent.info.agent)
@@ -168,12 +168,15 @@ class AIWolfNLPApp(App):
         except ConnectionRefusedError:
             raise ConnectionRefusedError("ゲームサーバへの接続に失敗しました。")
 
-    def agent_action(self, agent: Agent) -> str:
+    def agent_action(self, agent: Agent, log: AIwolfNLPLog) -> str:
         message: str = ""
 
         if Action.is_talk(request=agent.packet.request):
+            log.update_talk_history(talk_history=agent.packet.talk_history)
             self.query_one("#input_container", AIWolfNLPInputGroup).enable()
             message = self._wait_input()
+        elif Action.is_daily_initialize(request=agent.packet.request):
+            log.daily_initialize()
         else:
             self.query_one("#input_container", AIWolfNLPInputGroup).disable()
             message = agent.action()
