@@ -35,6 +35,23 @@ class AIwolfNLPLog(RichLog):
             disabled=disabled,
         )
 
+    def _color_option(
+        sel, red: bool = False, green: bool = False, blue: bool = False, orange: bool = False
+    ) -> str:
+        if red:
+            return "red"
+
+        if blue:
+            return "blue"
+
+        if green:
+            return "green"
+
+        if orange:
+            return "orange1"
+
+        return "bright_white"
+
     def _assignment_decoration(
         self,
         message: str,
@@ -42,22 +59,13 @@ class AIwolfNLPLog(RichLog):
         red: bool = False,
         green: bool = False,
         blue: bool = False,
+        orange: bool = False,
         bold: bool = False,
         under_line: bool = False,
     ) -> str:
         options: list = []
 
-        if (red and green) or (red and blue) or (green and blue):
-            raise ValueError("Only one of red, green, or blue can be True at a time.")
-
-        if red:
-            options.append("red")
-
-        if blue:
-            options.append("blue")
-
-        if green:
-            options.append("green")
+        options.append(self._color_option(red=red, green=green, blue=blue, orange=orange))
 
         if bold:
             options.append("b")
@@ -80,6 +88,7 @@ class AIwolfNLPLog(RichLog):
         *,
         success: bool = False,
         error: bool = False,
+        morning: bool = False,
         night: bool = False,
     ) -> None:
         system_message: str = self._assignment_decoration(
@@ -87,6 +96,7 @@ class AIwolfNLPLog(RichLog):
             red=error,
             green=success,
             blue=night,
+            orange=morning,
             bold=True,
             under_line=True,
         )
@@ -118,4 +128,5 @@ class AIwolfNLPLog(RichLog):
         self.update()
 
     def daily_initialize(self) -> None:
+        self.add_system_message(message="朝が来ました:sunrise:", morning=True)
         self.latest_history_index = None
