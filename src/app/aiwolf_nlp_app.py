@@ -173,15 +173,28 @@ class AIWolfNLPApp(App):
 
         if Action.is_talk(request=agent.packet.request):
             self.query_one("#input_container", AIWolfNLPInputGroup).enable()
-            self.button_pressed_event.wait()
-            self.button_pressed_event.clear()
-            message = self.query_one("#comment_field", Input).value
-            self.query_one("#comment_field", Input).clear()
+            message = self._wait_input()
         else:
             self.query_one("#input_container", AIWolfNLPInputGroup).disable()
             message = agent.action()
 
         return message
+
+    def _wait_input(self) -> str:
+        while True:
+            self.button_pressed_event.wait()
+            self.button_pressed_event.clear()
+
+            if self.query_one("#comment_field", Input).value:
+                break
+
+            self.query_one("#input_container", AIWolfNLPInputGroup).set_empty_class()
+
+        input_content: str = self.query_one("#comment_field", Input).value
+        self.query_one("#comment_field", Input).clear()
+        self.query_one("#input_container", AIWolfNLPInputGroup).set_normal_class()
+
+        return input_content
 
     def execute(self) -> None:
         text = """

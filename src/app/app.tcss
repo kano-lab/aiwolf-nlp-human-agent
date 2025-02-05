@@ -43,9 +43,16 @@
 }
 
 #input_container > #comment_field{
-    border: heavy white;
     width: 60%;
     margin: 1;
+}
+
+#input_container > .normal{
+    border: heavy white;
+}
+
+#input_container > .error{
+    border: dashed red;
 }
 
 #input_container >#send_button{
