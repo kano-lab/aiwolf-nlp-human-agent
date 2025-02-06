@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from configparser import ConfigParser
 from pathlib import Path
 
@@ -10,7 +11,7 @@ from rich_pixels import Pixels
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, HorizontalGroup, VerticalGroup
-from textual.widgets import Label, Button, Input
+from textual.widgets import Button, Input, Label
 from textual.worker import get_current_worker
 
 from app.widgets import AIWolfNLPInputGroup, AIwolfNLPLog, MapLabel
@@ -18,9 +19,9 @@ from player.agent import Agent
 from utils.agent_log import AgentLog
 from utils.log_info import LogInfo
 
+from .debug_setting import DebugSetting
 from .screen.title import TitleScreen, TitleScreenResult
-
-import threading
+from .screen.vote import VoteScreen
 
 
 def create_detail_label(key: str, value: str, id: str | None = None) -> MapLabel:
@@ -43,6 +44,9 @@ class AIWolfNLPApp(App):
         self.image = Image.open(self.IMAGE_PATH)
         self.image = Pixels.from_image(self.image)
         self.button_pressed_event = threading.Event()
+
+        self.debug_setting: DebugSetting = DebugSetting(auto_talk=True)
+
         super().__init__()
 
     def _on_mount(self, event):
@@ -121,8 +125,16 @@ class AIWolfNLPApp(App):
             req = self.agent_action(agent=agent, log=log)
 
             if Action.is_initialize(request=agent.packet.request):
-                self.query_one("#agent_name_info", MapLabel).update_value(value=agent.info.agent)
-                self.query_one("#agent_role_info", MapLabel).update_value(value=agent.role.ja)
+                self.call_from_thread(
+                    callback=lambda: self.query_one("#agent_name_info", MapLabel).update_value(
+                        value=agent.info.agent,
+                    ),
+                )
+                self.call_from_thread(
+                    callback=lambda: self.query_one("#agent_role_info", MapLabel).update_value(
+                        value=agent.role.ja,
+                    ),
+                )
 
             if req != "":
                 client.send(req=req)
@@ -171,12 +183,20 @@ class AIWolfNLPApp(App):
     def agent_action(self, agent: Agent, log: AIwolfNLPLog) -> str:
         message: str = ""
 
-        if Action.is_talk(request=agent.packet.request):
+        if Action.is_talk(request=agent.packet.request) and not self.debug_setting.automatic_talk:
             log.update_talk_history(talk_history=agent.packet.talk_history)
             self.query_one("#input_container", AIWolfNLPInputGroup).enable()
             message = self._wait_input()
         elif Action.is_daily_initialize(request=agent.packet.request):
             log.daily_initialize()
+        elif Action.is_daily_finish(request=agent.packet.request):
+            log.add_system_message(message="夜になりました！:zzz:", night=True)
+        elif Action.is_vote(request=agent.packet.request):
+            vote_target = self.call_from_thread(
+                lambda: self.push_screen_wait(VoteScreen(status_map=agent.packet.info.status_map)),
+            )
+            log.add_system_message(message=f"{vote_target}に投票しました", success=True)
+            message = vote_target
         else:
             self.query_one("#input_container", AIWolfNLPInputGroup).disable()
             message = agent.action()
@@ -198,16 +218,6 @@ class AIWolfNLPApp(App):
         self.query_one("#input_container", AIWolfNLPInputGroup).set_normal_class()
 
         return input_content
-
-    def execute(self) -> None:
-        text = """
-            Agent[01]: こんにちは！
-            Agent[02]: こんにちは！
-
-            [bold blue u]夜になりました！:zzz:[/bold blue u]:zzz:
-
-            [bold red u]接続が途切れました。[/bold red u]
-        """
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "send_button":
