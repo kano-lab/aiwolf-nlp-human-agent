@@ -187,14 +187,32 @@ class AIWolfNLPApp(App):
             log.update_talk_history(talk_history=agent.packet.talk_history)
             self.query_one("#input_container", AIWolfNLPInputGroup).enable()
             message = self._wait_input()
+        elif Action.is_vote(request=agent.packet.request) and not self.debug_setting.automatic_vote:
+            vote_target = self.push_screen_wait(VoteScreen(status_map=agent.packet.info.status_map))
+            log.add_system_message(message=f"{vote_target}に投票しました", success=True)
+            message = vote_target
+        elif (
+            Action.is_divine(request=agent.packet.request)
+            and not self.debug_setting.automatic_divine
+        ):
+            divine_target = self.push_screen_wait(
+                VoteScreen(status_map=agent.packet.info.status_map),
+            )
+            log.add_system_message(message=f"{divine_target}を占いました", success=True)
+            message = divine_target
+        elif (
+            Action.is_attack(request=agent.packet.request)
+            and not self.debug_setting.automatic_attack
+        ):
+            attack_target = self.push_screen_wait(
+                VoteScreen(status_map=agent.packet.info.status_map),
+            )
+            log.add_system_message(message=f"{attack_target}を襲撃します", success=True)
+            message = attack_target
         elif Action.is_daily_initialize(request=agent.packet.request):
             log.daily_initialize()
         elif Action.is_daily_finish(request=agent.packet.request):
             log.add_system_message(message="夜になりました！:zzz:", night=True)
-        elif Action.is_vote(request=agent.packet.request):
-            vote_target = self.push_screen_wait(VoteScreen(status_map=agent.packet.info.status_map))
-            log.add_system_message(message=f"{vote_target}に投票しました", success=True)
-            message = vote_target
         else:
             self.query_one("#input_container", AIWolfNLPInputGroup).disable()
             message = agent.action()
