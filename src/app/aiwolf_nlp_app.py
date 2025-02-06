@@ -107,8 +107,10 @@ class AIWolfNLPApp(App):
         self.query_one("#image", Label).update(self.image)
 
         try:
-            client, agent = self._game_initialize(user_name=user_name)
-            self._connect(client=client, log=log)
+            client, agent = self.call_from_thread(
+                callback=lambda: self._game_initialize(user_name=user_name),
+            )
+            self.call_from_thread(callback=lambda: self._connect(client=client, log=log))
         except Exception as e:
             self._app_exit(log=log, error_message=str(e))
             return
@@ -122,7 +124,7 @@ class AIWolfNLPApp(App):
             if agent.packet is None:
                 continue
 
-            req = self.agent_action(agent=agent, log=log)
+            req = self.call_from_thread(callback=lambda: self.agent_action(agent=agent, log=log))
 
             if Action.is_initialize(request=agent.packet.request):
                 self.call_from_thread(
@@ -171,11 +173,9 @@ class AIWolfNLPApp(App):
         try:
             client.connect()
             if not worker.is_cancelled:
-                self.call_from_thread(
-                    lambda: log.add_system_message(
-                        message="ゲームサーバに接続しました!",
-                        success=True,
-                    ),
+                log.add_system_message(
+                    message="ゲームサーバに接続しました!",
+                    success=True,
                 )
         except ConnectionRefusedError:
             raise ConnectionRefusedError("ゲームサーバへの接続に失敗しました。")
@@ -192,9 +192,7 @@ class AIWolfNLPApp(App):
         elif Action.is_daily_finish(request=agent.packet.request):
             log.add_system_message(message="夜になりました！:zzz:", night=True)
         elif Action.is_vote(request=agent.packet.request):
-            vote_target = self.call_from_thread(
-                lambda: self.push_screen_wait(VoteScreen(status_map=agent.packet.info.status_map)),
-            )
+            vote_target = self.push_screen_wait(VoteScreen(status_map=agent.packet.info.status_map))
             log.add_system_message(message=f"{vote_target}に投票しました", success=True)
             message = vote_target
         else:
