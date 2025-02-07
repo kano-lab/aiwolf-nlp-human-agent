@@ -188,7 +188,7 @@ class AIWolfNLPApp(App):
             self.query_one("#input_container", AIWolfNLPInputGroup).enable()
             message = self._wait_input()
         elif Action.is_vote(request=agent.packet.request) and not self.debug_setting.automatic_vote:
-            vote_target = self.push_screen_wait(VoteScreen(status_map=agent.packet.info.status_map))
+            vote_target = self.push_screen_wait(VoteScreen(agent=agent, vote=True))
             log.add_system_message(message=f"{vote_target}に投票しました", success=True)
             message = vote_target
         elif (
@@ -196,7 +196,10 @@ class AIWolfNLPApp(App):
             and not self.debug_setting.automatic_divine
         ):
             divine_target = self.push_screen_wait(
-                VoteScreen(status_map=agent.packet.info.status_map),
+                VoteScreen(
+                    agent=agent,
+                    divine=True,
+                ),
             )
             log.add_system_message(message=f"{divine_target}を占いました", success=True)
             message = divine_target
@@ -205,7 +208,10 @@ class AIWolfNLPApp(App):
             and not self.debug_setting.automatic_attack
         ):
             attack_target = self.push_screen_wait(
-                VoteScreen(status_map=agent.packet.info.status_map),
+                VoteScreen(
+                    agent=agent,
+                    attack=True,
+                ),
             )
             log.add_system_message(message=f"{attack_target}を襲撃します", success=True)
             message = attack_target

@@ -1,0 +1,30 @@
+VoteScreen{
+    align: center middle;
+}
+
+#vote_frame{
+    width: 80%;
+    height: 60%;
+    border: ascii white;
+    align: center middle;
+}
+
+#vote_description{
+    width: 100%;
+    text-align: center;
+    margin: 1;
+}
+
+.button_row{
+    align: center middle;
+}
+
+.alive{
+    border: ascii rgba(0, 255, 0, 0.5);
+    margin: 1;
+}
+
+.dead{
+    border: ascii rgba(255, 0, 0, 0.5);
+    margin: 1;
+}
