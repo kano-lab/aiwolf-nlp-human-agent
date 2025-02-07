@@ -11,10 +11,10 @@ from rich_pixels import Pixels
 from textual import work
 from textual.app import App, ComposeResult
 from textual.containers import Container, HorizontalGroup, VerticalGroup
-from textual.widgets import Button, Input, Label
+from textual.widgets import Button, Input, Label, Digits
 from textual.worker import get_current_worker
 
-from app.widgets import AIWolfNLPInputGroup, AIwolfNLPLog, MapLabel
+from app.widgets import AIWolfNLPInputGroup, AIwolfNLPLog, MapLabel, AIWolfNLPTimer
 from player.agent import Agent
 from utils.agent_log import AgentLog
 from utils.log_info import LogInfo
@@ -61,7 +61,10 @@ class AIWolfNLPApp(App):
     def compose(self) -> ComposeResult:
         yield HorizontalGroup(
             VerticalGroup(
-                Label("[bold]・会話履歴", id="history_log_label"),
+                HorizontalGroup(
+                    Label("[bold]・会話履歴", id="history_log_label"),
+                    AIWolfNLPTimer(id="timer"),
+                ),
                 AIwolfNLPLog(markup=True, id="history_log"),
                 id="history_container",
             ),
@@ -185,12 +188,18 @@ class AIWolfNLPApp(App):
 
         if Action.is_talk(request=agent.packet.request) and not self.debug_setting.automatic_talk:
             self.call_from_thread(
+                callback=lambda: self.query_one("#timer", AIWolfNLPTimer).start_timer()
+            )
+            self.call_from_thread(
                 callback=lambda: log.update_talk_history(talk_history=agent.packet.talk_history),
             )
             self.call_from_thread(
                 callback=lambda: self.query_one("#input_container", AIWolfNLPInputGroup).enable()
             )
             message = self._wait_input()
+            self.call_from_thread(
+                callback=lambda: self.query_one("#timer", AIWolfNLPTimer).start_spinner()
+            )
         elif Action.is_vote(request=agent.packet.request) and not self.debug_setting.automatic_vote:
             vote_target = self.call_from_thread(
                 callback=lambda: self.push_screen_wait(VoteScreen(agent=agent, vote=True)),
@@ -240,6 +249,12 @@ class AIWolfNLPApp(App):
                 ),
             )
             message = attack_target
+        elif Action.is_initialize(request=agent.packet.request):
+            self.call_from_thread(
+                callback=lambda: self.query_one("#timer", AIWolfNLPTimer).set_action_timeout(
+                    action_timeout=agent.packet.setting.action_timeout
+                )
+            )
         elif Action.is_daily_initialize(request=agent.packet.request):
             self.call_from_thread(callback=lambda: log.daily_initialize())
         elif Action.is_daily_finish(request=agent.packet.request):
@@ -248,7 +263,8 @@ class AIWolfNLPApp(App):
                     message="夜になりました！:zzz:", night=True
                 ),
             )
-        else:
+
+        if not message:
             self.call_from_thread(
                 callback=lambda: self.query_one("#input_container", AIWolfNLPInputGroup).disable(),
             )
