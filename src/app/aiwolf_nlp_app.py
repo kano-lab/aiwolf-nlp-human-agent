@@ -45,7 +45,7 @@ class AIWolfNLPApp(App):
         self.image = Pixels.from_image(self.image)
         self.button_pressed_event = threading.Event()
 
-        self.debug_setting: DebugSetting = DebugSetting(auto_talk=True)
+        self.debug_setting: DebugSetting = DebugSetting(auto_talk=False)
 
         super().__init__()
 
@@ -124,7 +124,7 @@ class AIWolfNLPApp(App):
             if agent.packet is None:
                 continue
 
-            req = self.call_from_thread(callback=lambda: self.agent_action(agent=agent, log=log))
+            req = self.agent_action(agent=agent, log=log)
 
             if Action.is_initialize(request=agent.packet.request):
                 self.call_from_thread(
@@ -184,43 +184,74 @@ class AIWolfNLPApp(App):
         message: str = ""
 
         if Action.is_talk(request=agent.packet.request) and not self.debug_setting.automatic_talk:
-            log.update_talk_history(talk_history=agent.packet.talk_history)
-            self.query_one("#input_container", AIWolfNLPInputGroup).enable()
+            self.call_from_thread(
+                callback=lambda: log.update_talk_history(talk_history=agent.packet.talk_history),
+            )
+            self.call_from_thread(
+                callback=lambda: self.query_one("#input_container", AIWolfNLPInputGroup).enable()
+            )
             message = self._wait_input()
         elif Action.is_vote(request=agent.packet.request) and not self.debug_setting.automatic_vote:
-            vote_target = self.push_screen_wait(VoteScreen(agent=agent, vote=True))
-            log.add_system_message(message=f"{vote_target}に投票しました", success=True)
+            vote_target = self.call_from_thread(
+                callback=lambda: self.push_screen_wait(VoteScreen(agent=agent, vote=True)),
+            )
+            self.call_from_thread(
+                callback=lambda: log.add_system_message(
+                    message=f"{vote_target}に投票しました",
+                    success=True,
+                ),
+            )
             message = vote_target
         elif (
             Action.is_divine(request=agent.packet.request)
             and not self.debug_setting.automatic_divine
         ):
-            divine_target = self.push_screen_wait(
-                VoteScreen(
-                    agent=agent,
-                    divine=True,
+            divine_target = self.call_from_thread(
+                callback=lambda: self.push_screen_wait(
+                    VoteScreen(
+                        agent=agent,
+                        divine=True,
+                    ),
                 ),
             )
-            log.add_system_message(message=f"{divine_target}を占いました", success=True)
+            self.call_from_thread(
+                callback=lambda: log.add_system_message(
+                    message=f"{divine_target}を占いました",
+                    success=True,
+                ),
+            )
             message = divine_target
         elif (
             Action.is_attack(request=agent.packet.request)
             and not self.debug_setting.automatic_attack
         ):
-            attack_target = self.push_screen_wait(
-                VoteScreen(
-                    agent=agent,
-                    attack=True,
+            attack_target = self.call_from_thread(
+                callback=lambda: self.push_screen_wait(
+                    VoteScreen(
+                        agent=agent,
+                        attack=True,
+                    ),
                 ),
             )
-            log.add_system_message(message=f"{attack_target}を襲撃します", success=True)
+            self.call_from_thread(
+                callback=lambda: log.add_system_message(
+                    message=f"{attack_target}を襲撃します",
+                    success=True,
+                ),
+            )
             message = attack_target
         elif Action.is_daily_initialize(request=agent.packet.request):
-            log.daily_initialize()
+            self.call_from_thread(callback=lambda: log.daily_initialize())
         elif Action.is_daily_finish(request=agent.packet.request):
-            log.add_system_message(message="夜になりました！:zzz:", night=True)
+            self.call_from_thread(
+                callback=lambda: log.add_system_message(
+                    message="夜になりました！:zzz:", night=True
+                ),
+            )
         else:
-            self.query_one("#input_container", AIWolfNLPInputGroup).disable()
+            self.call_from_thread(
+                callback=lambda: self.query_one("#input_container", AIWolfNLPInputGroup).disable(),
+            )
             message = agent.action()
 
         return message
