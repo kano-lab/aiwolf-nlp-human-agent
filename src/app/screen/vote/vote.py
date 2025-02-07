@@ -3,7 +3,7 @@ from aiwolf_nlp_common.status import Status
 from textual.app import ComposeResult
 from textual.containers import HorizontalGroup, VerticalGroup
 from textual.screen import ModalScreen
-from textual.widgets import Button, Label
+from textual.widgets import Button, Digits, Label
 
 from player.agent import Agent
 
@@ -12,6 +12,7 @@ class VoteScreen(ModalScreen[str]):
     CSS_PATH = "vote.tcss"
 
     __max_row_button_num: int = 3
+    __warn_threshold_seconds: int = 10
 
     __error_description: str = "[b]説明が追加されていません。"
     __vote_description: str = "[b]投票を行うエージェントを選択してください。"
@@ -31,6 +32,7 @@ class VoteScreen(ModalScreen[str]):
     ) -> None:
         self.agent_name: str = agent.info.agent
         self.status_map: StatusMap = agent.info.status_map
+        self.action_timeout = agent.setting.action_timeout
         self.vote = vote
         self.divine = divine
         self.attack = attack
@@ -87,10 +89,28 @@ class VoteScreen(ModalScreen[str]):
     def compose(self) -> ComposeResult:
         frame = VerticalGroup(id="vote_frame")
 
-        frame.compose_add_child(Label(self._get_description(), id="vote_description"))
+        frame.compose_add_child(
+            HorizontalGroup(
+                Label(self._get_description(), id="vote_description"),
+                Digits(str(self.action_timeout), id="vote_timer"),
+                id="vote_info_group",
+            ),
+        )
         self._set_button(frame=frame)
 
         yield frame
+
+    def on_mount(self) -> None:
+        self.update_clock()
+        self.set_interval(1, self.update_clock)
+
+    def update_clock(self) -> None:
+        self.action_timeout -= 1
+
+        if self.action_timeout <= self.__warn_threshold_seconds:
+            self.query_one("#vote_timer", Digits).add_class("warn")
+
+        self.query_one("#vote_timer", Digits).update(str(self.action_timeout))
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         self.dismiss(str(event.button.label))

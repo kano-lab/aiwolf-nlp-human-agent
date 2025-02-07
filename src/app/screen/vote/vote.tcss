@@ -9,10 +9,23 @@ VoteScreen{
     align: center middle;
 }
 
-#vote_description{
-    width: 100%;
+#vote_frame > #vote_info_group{
+    height: 30%;
+    align: center middle;
+}
+
+#vote_frame > #vote_info_group > #vote_description{
     text-align: center;
     margin: 1;
+}
+
+#vote_frame > #vote_info_group > #vote_timer{
+    width: auto;
+    height: 40%;
+}
+
+#vote_frame > #vote_info_group > .warn{
+    color: red;
 }
 
 .button_row{
