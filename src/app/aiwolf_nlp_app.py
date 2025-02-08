@@ -187,7 +187,7 @@ class AIWolfNLPApp(App):
     def agent_action(self, agent: Agent, log: AIwolfNLPLog) -> str:
         message: str = ""
 
-        if Action.is_talk(request=agent.packet.request) and not self.debug_setting.automatic_talk:
+        if Action.is_talk(request=agent.packet.request):
             if not agent.packet.info.divine_result.is_empty():
                 self.call_from_thread(
                     callback=lambda: log.add_system_message(
@@ -205,7 +205,10 @@ class AIWolfNLPApp(App):
             self.call_from_thread(
                 callback=lambda: self.query_one("#input_container", AIWolfNLPInputGroup).enable()
             )
-            message = self._wait_input()
+
+            if not self.debug_setting.automatic_talk:
+                message = self._wait_input()
+
             self.call_from_thread(
                 callback=lambda: self.query_one("#timer", AIWolfNLPTimer).start_spinner()
             )
