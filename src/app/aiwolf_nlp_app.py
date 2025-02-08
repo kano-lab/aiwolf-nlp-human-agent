@@ -64,6 +64,7 @@ class AIWolfNLPApp(App):
                 HorizontalGroup(
                     Label("[bold]・会話履歴", id="history_log_label"),
                     AIWolfNLPTimer(id="timer"),
+                    id="label_timer",
                 ),
                 AIwolfNLPLog(markup=True, id="history_log"),
                 id="history_container",
@@ -187,6 +188,14 @@ class AIWolfNLPApp(App):
         message: str = ""
 
         if Action.is_talk(request=agent.packet.request) and not self.debug_setting.automatic_talk:
+            if not agent.packet.info.divine_result.is_empty():
+                self.call_from_thread(
+                    callback=lambda: log.add_system_message(
+                        message=f"占いの結果、{agent.packet.info.divine_result.target}は{agent.packet.info.divine_result.result}でした。"
+                    )
+                )
+                agent.packet.info.divine_result.reset()
+
             self.call_from_thread(
                 callback=lambda: self.query_one("#timer", AIWolfNLPTimer).start_timer()
             )
@@ -257,6 +266,22 @@ class AIWolfNLPApp(App):
             )
         elif Action.is_daily_initialize(request=agent.packet.request):
             self.call_from_thread(callback=lambda: log.daily_initialize())
+
+            if agent.info.executed_agent is not None:
+                self.call_from_thread(
+                    callback=lambda: log.add_system_message(
+                        message=f"{agent.info.executed_agent}が投票により処刑されました。",
+                        error=True,
+                    )
+                )
+
+            if agent.info.attacked_agent is not None:
+                self.call_from_thread(
+                    callback=lambda: log.add_system_message(
+                        message=f"{agent.info.attacked_agent}が人狼に襲われました。", error=True
+                    )
+                )
+
         elif Action.is_daily_finish(request=agent.packet.request):
             self.call_from_thread(
                 callback=lambda: log.add_system_message(
