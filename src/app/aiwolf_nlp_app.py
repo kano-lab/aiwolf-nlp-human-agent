@@ -46,7 +46,7 @@ class AIWolfNLPApp(App):
         self.prev_divine_result: str | None = None
         self.button_pressed_event = threading.Event()
 
-        self.debug_setting: DebugSetting = DebugSetting(auto_talk=True, auto_vote=True)
+        self.debug_setting: DebugSetting = DebugSetting(auto_talk=False, auto_vote=False)
 
         super().__init__()
 
@@ -108,7 +108,7 @@ class AIWolfNLPApp(App):
     @work(exclusive=True, thread=True)
     def _run_agent(self, user_name: str):
         log: AIwolfNLPLog = self.query_one("#history_log", AIwolfNLPLog)
-        user_name = "kanolab5"
+        # user_name = "kanolab5"
         self.query_one("#image", Label).update(self.image)
 
         try:
