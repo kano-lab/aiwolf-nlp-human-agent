@@ -1,6 +1,10 @@
 from aiwolf_nlp_common.protocol.list import TalkInfo, TalkList
 from textual.widgets import RichLog
 
+import random
+
+from utils import agent_util
+
 
 class AIwolfNLPLog(RichLog):
     __padding = "\t"
@@ -34,6 +38,37 @@ class AIwolfNLPLog(RichLog):
             classes=classes,
             disabled=disabled,
         )
+
+        self.agent_color = self._set_agent_color()
+
+    def _set_agent_color(self) -> dict:
+        reddish_list: list = ["orchid2", "hot_pink2"]
+        yellowish_list = ["light_goldenrod1", "yellow2"]
+        cyanotype_list: list = ["light_cyan1", "light_steel_blue"]
+        greenish_list: list = ["pale_green1", "sea_green1"]
+        purple_list: list = ["dark_violet", "medium_orchid"]
+
+        agent_list: list = []
+        agent_color: dict = {}
+
+        for i in range(5):
+            agent_list.append(agent_util.agent_idx_to_agent(idx=i + 1))
+
+        random.shuffle(agent_list)
+
+        for index, agent in enumerate(agent_list):
+            if index % 5 == 1:
+                agent_color[agent] = random.choice(reddish_list)
+            elif index % 5 == 2:
+                agent_color[agent] = random.choice(yellowish_list)
+            elif index % 5 == 3:
+                agent_color[agent] = random.choice(cyanotype_list)
+            elif index % 5 == 4:
+                agent_color[agent] = random.choice(greenish_list)
+            else:
+                agent_color[agent] = random.choice(purple_list)
+
+        return agent_color
 
     def _color_option(
         sel, red: bool = False, green: bool = False, blue: bool = False, orange: bool = False
@@ -106,6 +141,14 @@ class AIwolfNLPLog(RichLog):
 
         self.add_message(message=system_message)
 
+    def _allocate_agent_color(self, text: str) -> str:
+        for agent, color in self.agent_color.items():
+            text = text.replace(f">>{agent}", f"[{color}]>>{agent}[/{color}]").replace(
+                f"{agent}", f"[{color}]{agent}[/{color}]"
+            )
+
+        return text
+
     def write(self, width=None, expand=False, shrink=True, scroll_end=None, animate=False):
         content = str("\n".join(self.messages))
         return super().write(content=content)
@@ -122,7 +165,9 @@ class AIwolfNLPLog(RichLog):
             if self.latest_history_index is not None and talk_elem.idx <= self.latest_history_index:
                 continue
 
-            self.add_message(message=f"{talk_elem.agent}:{talk_elem.text}")
+            self.add_message(
+                message=self._allocate_agent_color(text=f"{talk_elem.agent}:{talk_elem.text}")
+            )
             self.latest_history_index = talk_elem.idx
 
         self.update()
