@@ -43,9 +43,10 @@ class AIWolfNLPApp(App):
     def __init__(self):
         self.image = Image.open(self.IMAGE_PATH)
         self.image = Pixels.from_image(self.image)
+        self.prev_divine_result: str | None = None
         self.button_pressed_event = threading.Event()
 
-        self.debug_setting: DebugSetting = DebugSetting(auto_talk=False)
+        self.debug_setting: DebugSetting = DebugSetting(auto_talk=True, auto_vote=True)
 
         super().__init__()
 
@@ -188,13 +189,16 @@ class AIWolfNLPApp(App):
         message: str = ""
 
         if Action.is_talk(request=agent.packet.request):
-            if not agent.packet.info.divine_result.is_empty():
+            if (
+                not agent.packet.info.divine_result.is_empty()
+                and self.prev_divine_result != agent.packet.info.divine_result.result
+            ):
                 self.call_from_thread(
                     callback=lambda: log.add_system_message(
                         message=f"占いの結果、{agent.packet.info.divine_result.target}は{agent.packet.info.divine_result.result}でした。"
                     )
                 )
-                agent.packet.info.divine_result.reset()
+                self.prev_divine_result = agent.packet.info.divine_result.result
 
             self.call_from_thread(
                 callback=lambda: self.query_one("#timer", AIWolfNLPTimer).start_timer()
