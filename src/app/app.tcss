@@ -1,20 +1,25 @@
 
 #info_container{
     width: 100%;
-    height: 80%;
+    height: 90%;
 }
 
-#history_container{
+#info_container > #history_container{
     width: 70%;
     margin: 1;
 }
 
-#history_log_label{
+#info_container > #history_container > #label_timer > #history_log_label{
     margin: 1;
 }
 
-#history_log{
+#info_container > #history_container > #label_timer > #timer{
+    margin-left: 100;
+}
+
+#info_container > #history_container > #history_log{
     width: 100%;
+    border: ascii white;
 }
 
 #player_info_container{
@@ -38,7 +43,7 @@
 
 #input_container{
     width: 100%;
-    height: 20%;
+    height: 10%;
     align: center middle;
 }
 
